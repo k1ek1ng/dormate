@@ -10,11 +10,12 @@ struct ContentView: View {
                 case .unauthenticated:
                     AuthView()
                         .environmentObject(viewModel)
-                    
+                case .livingSurvey:
+                    LivingPreferencesSurveyView()
+                        .environmentObject(viewModel)
                 case .profileSetup:
                     ProfileSetupView()
                         .environmentObject(viewModel)
-                    
                 case .authenticated:
                     MainTabViewContainer()
                         .environmentObject(viewModel)

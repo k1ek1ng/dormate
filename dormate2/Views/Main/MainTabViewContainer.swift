@@ -6,6 +6,8 @@ struct MainTabViewContainer: View {
     @State private var showEditProfile = false
     @State private var showEditLivingPreferences = false
     @State private var activeSheet: ActiveSheet?
+    @State private var showImagePicker = false
+    @State private var uiImage: UIImage?
     
     enum ActiveSheet: Identifiable {
         case editBasicInfo
@@ -52,53 +54,78 @@ struct MainTabViewContainer: View {
                             // Profile Header with Image
                             VStack(spacing: 16) {
                                 // Profile Image
-                                if let imageUrl = user.profileImageUrl,
-                                   let url = URL(string: imageUrl) {
-                                    AsyncImage(url: url) { phase in
-                                        switch phase {
-                                        case .empty:
-                                            ProgressView()
-                                                .frame(width: 120, height: 120)
-                                                .background(Color(.systemGray5))
-                                                .clipShape(Circle())
-                                        case .success(let image):
-                                            image
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fill)
-                                                .frame(width: 120, height: 120)
-                                                .clipShape(Circle())
-                                                .overlay(
-                                                    Circle()
-                                                        .stroke(Color(.systemGray5), lineWidth: 1)
-                                                )
-                                        case .failure(_):
-                                            Image(systemName: "person.circle.fill")
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fit)
-                                                .frame(width: 120, height: 120)
-                                                .foregroundColor(.gray)
-                                                .background(Color(.systemGray6))
-                                                .clipShape(Circle())
-                                        @unknown default:
-                                            Image(systemName: "person.circle.fill")
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fit)
-                                                .frame(width: 120, height: 120)
-                                                .foregroundColor(.gray)
-                                                .background(Color(.systemGray6))
-                                                .clipShape(Circle())
+                                ZStack {
+                                    if let uiImage = uiImage {
+                                        Image(uiImage: uiImage)
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fill)
+                                            .frame(width: 120, height: 120)
+                                            .clipShape(Circle())
+                                            .overlay(
+                                                Circle()
+                                                    .stroke(Color(.systemGray5), lineWidth: 1)
+                                            )
+                                    } else if let imageUrl = user.profileImageUrl,
+                                              let url = URL(string: imageUrl) {
+                                        AsyncImage(url: url) { phase in
+                                            switch phase {
+                                            case .empty:
+                                                ProgressView()
+                                                    .frame(width: 120, height: 120)
+                                                    .background(Color(.systemGray5))
+                                                    .clipShape(Circle())
+                                            case .success(let image):
+                                                image
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fill)
+                                                    .frame(width: 120, height: 120)
+                                                    .clipShape(Circle())
+                                                    .overlay(
+                                                        Circle()
+                                                            .stroke(Color(.systemGray5), lineWidth: 1)
+                                                    )
+                                            case .failure(_):
+                                                Image(systemName: "person.circle.fill")
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fit)
+                                                    .frame(width: 120, height: 120)
+                                                    .foregroundColor(.gray)
+                                                    .background(Color(.systemGray6))
+                                                    .clipShape(Circle())
+                                            @unknown default:
+                                                Image(systemName: "person.circle.fill")
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fit)
+                                                    .frame(width: 120, height: 120)
+                                                    .foregroundColor(.gray)
+                                                    .background(Color(.systemGray6))
+                                                    .clipShape(Circle())
+                                            }
                                         }
+                                    } else {
+                                        Image(systemName: "person.circle.fill")
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(width: 120, height: 120)
+                                            .foregroundColor(Theme.primaryColor)
+                                            .background(Color(.systemGray6))
+                                            .clipShape(Circle())
                                     }
-                                } else {
-                                    Image(systemName: "person.circle.fill")
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
+                                    // Tap area
+                                    Circle()
                                         .frame(width: 120, height: 120)
-                                        .foregroundColor(Theme.primaryColor)
-                                        .background(Color(.systemGray6))
-                                        .clipShape(Circle())
+                                        .foregroundColor(.clear)
+                                        .contentShape(Circle())
+                                        .onTapGesture {
+                                            showImagePicker = true
+                                        }
                                 }
-                                
+                                Text("Change Photo")
+                                    .font(.subheadline)
+                                    .foregroundColor(Theme.primaryColor)
+                                    .onTapGesture {
+                                        showImagePicker = true
+                                    }
                                 // Name and College
                                 VStack(spacing: 8) {
                                     Text("\(user.firstName) \(user.lastName)")
@@ -240,6 +267,9 @@ struct MainTabViewContainer: View {
             print("✅ MainTabView appeared. Current user: \(viewModel.currentUser?.firstName ?? "nil")")
             print("✅ App state: \(viewModel.appState)")
         }
+        .sheet(isPresented: $showImagePicker, onDismiss: handleImagePicked) {
+            ImagePicker(image: $uiImage)
+        }
         .sheet(item: $activeSheet) { sheet in
             NavigationStack {
                 switch sheet {
@@ -264,6 +294,20 @@ struct MainTabViewContainer: View {
                         }
                         .environmentObject(viewModel)
                     }
+                }
+            }
+        }
+    }
+    
+    private func handleImagePicked() {
+        guard let uiImage = uiImage, var user = viewModel.currentUser else { return }
+        Task {
+            if let imageUrl = try? await viewModel.updateProfileImage(uiImage: uiImage) {
+                user.profileImageUrl = imageUrl
+                await viewModel.updateUserProfile(user: user)
+                await MainActor.run {
+                    viewModel.currentUser = user
+                    self.uiImage = nil // Clear local image after upload
                 }
             }
         }

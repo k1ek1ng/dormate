@@ -237,7 +237,7 @@ struct ProfileSetupView: View {
         viewModel.errorMessage = nil
         
         // Build updated user object
-        let updatedUser = User(
+        var updatedUser = User(
             id: viewModel.currentUser?.id ?? "",
             email: viewModel.currentUser?.email ?? "",
             firstName: firstName,
@@ -249,6 +249,13 @@ struct ProfileSetupView: View {
             profileImageUrl: viewModel.currentUser?.profileImageUrl,
             livingPreferences: viewModel.currentUser?.livingPreferences
         )
+        
+        // Upload the image if selected
+        if let uiImage = uiImage {
+            if let imageUrl = try? await viewModel.updateProfileImage(uiImage: uiImage) {
+                updatedUser.profileImageUrl = imageUrl
+            }
+        }
         
         // Save to Firestore
         await viewModel.updateUserProfile(user: updatedUser)

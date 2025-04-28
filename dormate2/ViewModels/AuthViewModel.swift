@@ -9,6 +9,7 @@ import UIKit
 class AuthViewModel: ObservableObject {
     enum AppState {
         case unauthenticated
+        case livingSurvey
         case profileSetup
         case authenticated
     }
@@ -92,7 +93,7 @@ class AuthViewModel: ObservableObject {
             
             try await saveUserToFirestore(user)
             self.currentUser = user
-            self.appState = .profileSetup
+            self.appState = .livingSurvey
             
         } catch {
             handleAuthError(error)
