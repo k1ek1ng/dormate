@@ -24,12 +24,18 @@ class AuthViewModel: ObservableObject {
     private let storage = Storage.storage().reference()
     
     init() {
+        print("🔍 AuthViewModel initializing...")
         self.userSession = auth.currentUser
+        print("👤 Current user session: \(userSession?.uid ?? "none")")
         
         if let userSession {
+            print("🔄 Fetching user data...")
             Task {
                 await fetchUser(userId: userSession.uid)
             }
+        } else {
+            print("⚠️ No user session found")
+            appState = .unauthenticated
         }
     }
     

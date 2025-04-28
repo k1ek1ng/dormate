@@ -10,6 +10,8 @@ import FirebaseCore
 
 @main
 struct dormate2App: App {
+    @StateObject private var authViewModel = AuthViewModel()
+    
     init() {
         FirebaseApp.configure()
     }
@@ -17,6 +19,7 @@ struct dormate2App: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(authViewModel)
         }
     }
 }

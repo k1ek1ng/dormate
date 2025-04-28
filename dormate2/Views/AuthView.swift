@@ -8,11 +8,7 @@ struct AuthView: View {
         NavigationStack {
             VStack(spacing: 20) {
                 // Logo or App Name
-                Text("dormate")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .foregroundColor(Theme.primaryColor)
-                    .padding(.top, 50)
+                // Removed the top 'dormate' text
                 
                 Spacer()
                 
@@ -42,6 +38,5 @@ struct AuthView: View {
 }
 
 #Preview {
-    AuthView()
-        .environmentObject(AuthViewModel())
+    AuthView().environmentObject(AuthViewModel())
 } 
