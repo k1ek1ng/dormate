@@ -29,5 +29,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .environmentObject(MockAuthViewModel())
+        .environmentObject(AuthViewModel())
 } 
