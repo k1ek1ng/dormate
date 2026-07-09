@@ -2,11 +2,10 @@ import SwiftUI
 
 struct SignUpView: View {
     @EnvironmentObject var viewModel: AuthViewModel
-    @Environment(\.dismiss) var dismiss
+    @Binding var showLogin: Bool
     @State private var email = ""
     @State private var password = ""
     @State private var confirmPassword = ""
-    @State private var showSurvey = false
     
     var body: some View {
         ZStack {
@@ -57,13 +56,19 @@ struct SignUpView: View {
                     }
                     
                     Button {
+                        guard password == confirmPassword else {
+                            viewModel.errorMessage = "Passwords do not match"
+                            return
+                        }
+                        guard password.count >= 6 else {
+                            viewModel.errorMessage = "Password must be at least 6 characters"
+                            return
+                        }
                         Task {
-                            if password == confirmPassword {
-                                await viewModel.createUser(withEmail: email, password: password)
-                                showSurvey = true
-                            } else {
-                                viewModel.errorMessage = "Passwords do not match"
-                            }
+                            // On success, createUser sets appState = .livingSurvey
+                            // and ContentView navigates. On failure, the error
+                            // message shows and we stay here.
+                            await viewModel.createUser(withEmail: email, password: password)
                         }
                     } label: {
                         if viewModel.isLoading {
@@ -75,11 +80,11 @@ struct SignUpView: View {
                         }
                     }
                     .primaryButtonStyle()
-                    .disabled(viewModel.isLoading)
+                    .disabled(viewModel.isLoading || email.isEmpty || password.isEmpty || confirmPassword.isEmpty)
                     .padding(.top, 10)
                     
                     Button {
-                        dismiss()
+                        showLogin = true
                     } label: {
                         Text("Already have an account? Sign In")
                             .foregroundColor(Theme.accentColor)
@@ -91,16 +96,12 @@ struct SignUpView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
-        .navigationDestination(isPresented: $showSurvey) {
-            LivingPreferencesSurveyView()
-                .environmentObject(viewModel)
-        }
     }
 }
 
 #Preview {
     NavigationStack {
-        SignUpView()
+        SignUpView(showLogin: .constant(false))
             .environmentObject(AuthViewModel())
     }
 } 

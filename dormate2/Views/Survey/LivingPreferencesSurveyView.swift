@@ -4,7 +4,7 @@ struct LivingPreferencesSurveyView: View {
     @StateObject private var surveyModel = SurveyModel()
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var viewModel: AuthViewModel
-    @State private var showProfileSetup = false
+
     
     private var bedtimeRange: ClosedRange<Date> {
         let calendar = Calendar.current
@@ -219,12 +219,10 @@ struct LivingPreferencesSurveyView: View {
                             if surveyModel.currentQuestionIndex == surveyModel.totalQuestions - 1 {
                                 let preferences = surveyModel.toLivingPreferences()
                                 
-                                // Save preferences and THEN trigger navigation
+                                // Save preferences; on success appState moves to
+                                // .profileSetup and ContentView navigates.
                                 Task {
                                     await viewModel.updateLivingPreferences(preferences)
-                                    await MainActor.run {
-                                        showProfileSetup = true
-                                    }
                                 }
                             } else {
                                 withAnimation {
@@ -252,10 +250,6 @@ struct LivingPreferencesSurveyView: View {
                 }
             }
             .navigationBarBackButtonHidden(true)
-            .navigationDestination(isPresented: $showProfileSetup) {
-                ProfileSetupView()
-                    .environmentObject(viewModel)
-            }
         }
     }
 }

@@ -19,13 +19,17 @@ struct AuthView: View {
                 }
                 .pickerStyle(.segmented)
                 .padding(.horizontal)
+                .onChange(of: showLogin) { _, _ in
+                    // Don't carry stale errors between login and signup
+                    viewModel.errorMessage = nil
+                }
                 
                 // Show either LoginView or SignUpView
                 if showLogin {
-                    LoginView()
+                    LoginView(showLogin: $showLogin)
                         .environmentObject(viewModel)
                 } else {
-                    SignUpView()
+                    SignUpView(showLogin: $showLogin)
                         .environmentObject(viewModel)
                 }
                 

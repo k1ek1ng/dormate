@@ -2,9 +2,9 @@ import SwiftUI
 
 struct LoginView: View {
     @EnvironmentObject var viewModel: AuthViewModel
+    @Binding var showLogin: Bool
     @State private var email = ""
     @State private var password = ""
-    @State private var showMainView = false
     
     var body: some View {
         ZStack {
@@ -62,10 +62,9 @@ struct LoginView: View {
                     
                     Button {
                         Task {
+                            // Navigation happens via appState in ContentView —
+                            // no local navigation needed here.
                             await viewModel.signIn(withEmail: email, password: password)
-                            if viewModel.userSession != nil {
-                                showMainView = true
-                            }
                         }
                     } label: {
                         if viewModel.isLoading {
@@ -80,8 +79,9 @@ struct LoginView: View {
                     .disabled(viewModel.isLoading || email.isEmpty || password.isEmpty)
                     .padding(.top, 10)
                     
-                    NavigationLink(destination: SignUpView()
-                        .environmentObject(viewModel)) {
+                    Button {
+                        showLogin = false
+                    } label: {
                         Text("Don't have an account? Sign Up")
                             .foregroundColor(Theme.accentColor)
                     }
@@ -93,24 +93,12 @@ struct LoginView: View {
             }
         }
         .navigationBarHidden(true)
-        .fullScreenCover(isPresented: $showMainView) {
-            if viewModel.appState == .authenticated {
-                MainTabViewContainer()
-                    .environmentObject(viewModel)
-            } else if viewModel.appState == .profileSetup {
-                ProfileSetupView()
-                    .environmentObject(viewModel)
-            } else {
-                LoginView()
-                    .environmentObject(viewModel)
-            }
-        }
     }
 }
 
 #Preview {
     NavigationStack {
-        LoginView()
+        LoginView(showLogin: .constant(true))
             .environmentObject(AuthViewModel())
     }
     .preferredColorScheme(.light)
