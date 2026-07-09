@@ -13,7 +13,7 @@ struct ProfileSetupView: View {
     @State private var uiImage: UIImage?
     @State private var showImagePicker = false
     @State private var showCollegeSearch = false
-    @State private var showMainView = false
+
 
     private let sexOptions = ["Male", "Female", "Other"]
     private let interestOptions: [String] = [
@@ -56,10 +56,6 @@ struct ProfileSetupView: View {
         }
         .sheet(isPresented: $showCollegeSearch) {
             CollegeSearchView(selectedCollege: $selectedCollege)
-        }
-        .fullScreenCover(isPresented: $showMainView) {
-            MainTabViewContainer()
-                .environmentObject(viewModel)
         }
     }
 
@@ -260,11 +256,8 @@ struct ProfileSetupView: View {
         // Save to Firestore
         await viewModel.updateUserProfile(user: updatedUser)
         
-        // Check if the update was successful
-        if viewModel.errorMessage == nil {
-            showMainView = true
-        }
-        
+        // Navigation happens via appState in ContentView:
+        // updateUserProfile sets .authenticated when the profile is complete.
         viewModel.isLoading = false
     }
 }

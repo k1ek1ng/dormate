@@ -33,6 +33,10 @@ class AuthViewModel: ObservableObject {
             print("🔄 Fetching user data...")
             Task {
                 await fetchUser(userId: userSession.uid)
+                // Restore the right screen for the saved session —
+                // previously this never ran and cold launches always
+                // landed on the login screen.
+                routeForCurrentUser()
             }
         } else {
             print("⚠️ No user session found")
@@ -52,15 +56,8 @@ class AuthViewModel: ObservableObject {
             
             await fetchUser(userId: result.user.uid)
             
-            // Update app state based on user profile
-            if let currentUser = currentUser,
-               !currentUser.firstName.isEmpty,
-               !currentUser.lastName.isEmpty,
-               !currentUser.college.isEmpty {
-                appState = .authenticated
-            } else {
-                appState = .profileSetup
-            }
+            // Update app state based on how far the user got through onboarding
+            routeForCurrentUser()
             
         } catch {
             handleAuthError(error)
@@ -175,9 +172,25 @@ class AuthViewModel: ObservableObject {
         do {
             try await saveUserToFirestore(updatedUser)
             self.currentUser = updatedUser
+            routeForCurrentUser()
         } catch {
             print("DEBUG: Failed to update living preferences: \(error.localizedDescription)")
             errorMessage = "Failed to save preferences. Please try again."
+        }
+    }
+    
+    /// Single source of truth for post-auth routing based on onboarding progress.
+    func routeForCurrentUser() {
+        guard let user = currentUser else {
+            appState = userSession == nil ? .unauthenticated : .livingSurvey
+            return
+        }
+        if user.livingPreferences == nil {
+            appState = .livingSurvey
+        } else if user.firstName.isEmpty || user.lastName.isEmpty || user.college.isEmpty {
+            appState = .profileSetup
+        } else {
+            appState = .authenticated
         }
     }
     
@@ -287,6 +300,8 @@ class AuthViewModel: ObservableObject {
             try auth.signOut()
             self.userSession = nil
             self.currentUser = nil
+            self.errorMessage = nil
+            self.appState = .unauthenticated
         } catch {
             print("DEBUG: Failed to sign out with error: \(error.localizedDescription)")
         }
