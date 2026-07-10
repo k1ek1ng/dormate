@@ -1,7 +1,9 @@
 import Foundation
 import FirebaseAuth
+import FirebaseCore
 import FirebaseFirestore
 import FirebaseStorage
+import GoogleSignIn
 import SwiftUI
 import UIKit
 
@@ -61,6 +63,71 @@ class AuthViewModel: ObservableObject {
             
         } catch {
             handleAuthError(error)
+        }
+        
+        isLoading = false
+    }
+    
+    func signInWithGoogle() async {
+        guard let clientID = FirebaseApp.app()?.options.clientID else {
+            errorMessage = "Missing Google client configuration."
+            return
+        }
+        guard let rootViewController = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .flatMap({ $0.windows })
+            .first(where: { $0.isKeyWindow })?.rootViewController else {
+            errorMessage = "Unable to present Google sign-in."
+            return
+        }
+        
+        GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: clientID)
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController)
+            guard let idToken = result.user.idToken?.tokenString else {
+                throw NSError(domain: "AuthViewModel", code: 1,
+                              userInfo: [NSLocalizedDescriptionKey: "Missing Google ID token"])
+            }
+            let credential = GoogleAuthProvider.credential(
+                withIDToken: idToken,
+                accessToken: result.user.accessToken.tokenString
+            )
+            let authResult = try await auth.signIn(with: credential)
+            self.userSession = authResult.user
+            print("✅ Google sign-in successful")
+            
+            await fetchUser(userId: authResult.user.uid)
+            
+            // First Google sign-in: create the Firestore profile,
+            // pre-filling what Google gives us.
+            if currentUser == nil {
+                let profile = result.user.profile
+                let user = User(
+                    id: authResult.user.uid,
+                    email: authResult.user.email ?? "",
+                    firstName: profile?.givenName ?? "",
+                    lastName: profile?.familyName ?? "",
+                    sex: "",
+                    college: "",
+                    bio: "",
+                    interests: [],
+                    profileImageUrl: profile?.imageURL(withDimension: 240)?.absoluteString,
+                    livingPreferences: nil
+                )
+                try await saveUserToFirestore(user)
+                self.currentUser = user
+            }
+            
+            routeForCurrentUser()
+        } catch let error as GIDSignInError where error.code == .canceled {
+            // User dismissed the sheet — not an error worth showing.
+            print("ℹ️ Google sign-in canceled by user")
+        } catch {
+            errorMessage = "Google sign-in failed. Please try again."
+            print("❌ Google sign-in error: \(error)")
         }
         
         isLoading = false
@@ -297,6 +364,7 @@ class AuthViewModel: ObservableObject {
     
     func signOut() {
         do {
+            GIDSignIn.sharedInstance.signOut()
             try auth.signOut()
             self.userSession = nil
             self.currentUser = nil

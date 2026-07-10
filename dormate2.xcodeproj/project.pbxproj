@@ -144,6 +144,8 @@
 				E6DA79252DBE9C580007BD8B /* FirebaseStorage */,
 				E6DA79272DBE9C5F0007BD8B /* FirebaseMessaging */,
 				E6DA79292DBE9CBA0007BD8B /* FirebaseFirestore */,
+				AB12CD34EF56AB12CD34A002 /* GoogleSignIn */,
+				AB12CD34EF56AB12CD34A003 /* GoogleSignInSwift */,
 			);
 			productName = dormate2;
 			productReference = E644344E2DBDD7650097E78A /* dormate.app */;
@@ -229,6 +231,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				E6DA791B2DBE9BE70007BD8B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				AB12CD34EF56AB12CD34A001 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E644344F2DBDD7650097E78A /* Products */;
@@ -435,6 +438,7 @@
 				DEVELOPMENT_TEAM = 2DHL25F88B;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -464,6 +468,7 @@
 				DEVELOPMENT_TEAM = 2DHL25F88B;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -605,6 +610,14 @@
 				minimumVersion = 11.12.0;
 			};
 		};
+		AB12CD34EF56AB12CD34A001 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -642,6 +655,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E6DA791B2DBE9BE70007BD8B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
+		};
+		AB12CD34EF56AB12CD34A002 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AB12CD34EF56AB12CD34A001 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		AB12CD34EF56AB12CD34A003 /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AB12CD34EF56AB12CD34A001 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignInSwift;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
