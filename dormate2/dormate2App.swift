@@ -7,6 +7,7 @@
 
 import SwiftUI
 import FirebaseCore
+import GoogleSignIn
 
 @main
 struct dormate2App: App {
@@ -20,6 +21,9 @@ struct dormate2App: App {
         WindowGroup {
             ContentView()
                 .environmentObject(authViewModel)
+                .onOpenURL { url in
+                    GIDSignIn.sharedInstance.handle(url)
+                }
         }
     }
 }

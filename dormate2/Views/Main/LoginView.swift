@@ -79,6 +79,37 @@ struct LoginView: View {
                     .disabled(viewModel.isLoading || email.isEmpty || password.isEmpty)
                     .padding(.top, 10)
                     
+                    HStack {
+                        Rectangle().fill(Color.gray.opacity(0.3)).frame(height: 1)
+                        Text("or")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                        Rectangle().fill(Color.gray.opacity(0.3)).frame(height: 1)
+                    }
+                    .padding(.vertical, 4)
+                    
+                    Button {
+                        Task {
+                            await viewModel.signInWithGoogle()
+                        }
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "g.circle.fill")
+                            Text("Continue with Google")
+                                .fontWeight(.medium)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(Color(.systemBackground))
+                        .foregroundColor(Theme.textColor)
+                        .cornerRadius(10)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .strokeBorder(Color.gray.opacity(0.4), lineWidth: 1)
+                        )
+                    }
+                    .disabled(viewModel.isLoading)
+                    
                     Button {
                         showLogin = false
                     } label: {
