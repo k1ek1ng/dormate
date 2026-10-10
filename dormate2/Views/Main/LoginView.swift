@@ -62,7 +62,7 @@ struct LoginView: View {
                     
                     Button {
                         Task {
-                            // Navigation happens via appState in ContentView —
+                            // Navigation happens via appState in ContentView,
                             // no local navigation needed here.
                             await viewModel.signIn(withEmail: email, password: password)
                         }

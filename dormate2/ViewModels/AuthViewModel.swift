@@ -35,8 +35,8 @@ class AuthViewModel: ObservableObject {
             print("🔄 Fetching user data...")
             Task {
                 await fetchUser(userId: userSession.uid)
-                // Restore the right screen for the saved session —
-                // previously this never ran and cold launches always
+                // Restore the right screen for the saved session.
+                // Previously this never ran and cold launches always
                 // landed on the login screen.
                 routeForCurrentUser()
             }
@@ -123,7 +123,7 @@ class AuthViewModel: ObservableObject {
             
             routeForCurrentUser()
         } catch let error as GIDSignInError where error.code == .canceled {
-            // User dismissed the sheet — not an error worth showing.
+            // User dismissed the sheet, not an error worth showing.
             print("ℹ️ Google sign-in canceled by user")
         } catch {
             errorMessage = "Google sign-in failed. Please try again."
